@@ -5,7 +5,8 @@ A full-stack mini project that collects a user’s **email** and an **article UR
 ---
 ## Project Demo
 
-📹 **Watch the demo video**: [Project Demo Video]https://drive.google.com/file/d/1nuUUoH8o-r7B2mCnu4G__QLSFpus0GyL/view?usp=sharing)
+📹 **Watch the demo video**: [Project Demo Video](https://drive.google.com/file/d/1nuUUoH8o-r7B2mCnu4G__QLSFpus0GyL/view?usp=sharing)
+
 ## Features
 
 - Streamlit UI form with basic **email** and **URL** validation
