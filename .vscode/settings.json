@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\shuvo\\miniconda3\\envs\\aiagent\\python.exe",
+  "python.condaPath": "C:\\Users\\shuvo\\miniconda3\\Scripts\\conda.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python-envs.pythonProjects": [],
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda"
+}

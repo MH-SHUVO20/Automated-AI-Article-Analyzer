@@ -1,0 +1,301 @@
+{
+  "name": "Article_AI_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article-agent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -576,
+        -112
+      ],
+      "id": "2360c9f2-9cb1-4f6e-abfe-a5d73f0f6478",
+      "name": "Webhook",
+      "webhookId": "f2c4a403-bc9a-4cc4-90ba-4a22a43c7023",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{$json.body.article_url}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        -112
+      ],
+      "id": "f684f2a7-e893-451e-b18d-376a3a9eb527",
+      "name": "Fetch Article"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write:\n\n1. A clear 3–5 sentence summary.\n2. Then 3–5 key insights as bullet points.\n\nFormat exactly like this:\n\nSUMMARY:\n<summary text>\n\nINSIGHTS:\n- insight 1\n- insight 2\n- insight 3\n\nArticle:\n{{ $json[\"data\"].substring(0, 6000) }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -128,
+        -112
+      ],
+      "id": "249a3b56-b802-49a3-91f1-6aba6c36e740",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "d393a152-ea00-416c-966e-8b8143eb303b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "xpn9qn4SjtCRA8mP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aVMS9ppjnk6TYHc1OWCj9QKn7iP_mTldzCfZhz9JUsM",
+          "mode": "list",
+          "cachedResultName": "AI Article Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aVMS9ppjnk6TYHc1OWCj9QKn7iP_mTldzCfZhz9JUsM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aVMS9ppjnk6TYHc1OWCj9QKn7iP_mTldzCfZhz9JUsM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{$node[\"Webhook\"].json[\"body\"][\"session_id\"]}}",
+            "article_url": "={{$node[\"Webhook\"].json[\"body\"][\"article_url\"]}}",
+            "summary": "={{$json[\"text\"].split(\"INSIGHTS:\")[0].replace(\"SUMMARY:\", \"\").trim()}}",
+            "insights": "={{$json[\"text\"].split(\"INSIGHTS:\")[1].trim()}}",
+            "email": "={{$node[\"Webhook\"].json[\"body\"][\"email\"]}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "article_url",
+              "displayName": "article_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "insights",
+              "displayName": "insights",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        -208
+      ],
+      "id": "929f3969-cc96-4c6a-a699-bb56eabe474c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QeSFCaxX9EYQZbPT",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node[\"Webhook\"].json[\"body\"][\"email\"]}}",
+        "subject": "=AI Article Summary – Session {{$node[\"Webhook\"].json[\"body\"][\"session_id\"]}}",
+        "emailType": "text",
+        "message": "=Hello,\n\n{{$json.text}}\n\nThank you.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "84095a9d-b5f4-48eb-a6fc-a0e80de67132",
+      "name": "Send a message",
+      "webhookId": "d775ad37-316d-4807-b0ba-47af7505af5e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HH5deL51CdtO1bF8",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-length": "184",
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "email": "mdmehedihasanshuvo995@gmail.com",
+            "article_url": "https://www.unesco.org/en/digital-education/artificial-intelligence",
+            "session_id": "e92a3cff-7233-42ff-9889-de01248ce7e8"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/article-agent",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Dhaka",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ee7a3825-207d-49bb-a60f-96e8457a81fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ed5edfc4be3e205d0fc55bcca3658b90b59854ebf0c6decb1e99a8cde11fb44"
+  },
+  "id": "dy40Quyi1ieeUoCU",
+  "tags": []
+}
