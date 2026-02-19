@@ -1,99 +1,150 @@
-@'
 # Automated AI Article Analyzer
 
-A full-stack mini project that accepts an email and article URL from a Streamlit frontend, sends the request to a FastAPI backend, and triggers an n8n workflow for automation.
+A full-stack mini project that collects a user’s **email** and an **article URL** from a **Streamlit** frontend, sends the request to a **FastAPI** backend, and triggers an **n8n** workflow (via webhook) to automate downstream processing.
+
+---
 
 ## Features
 
-- Frontend form with email and URL validation
-- Backend input validation and session_id generation
-- Payload forwarding to n8n webhook:
-  - email
-  - article_url
-  - session_id
-- Health check endpoint for backend status
+- Streamlit UI form with basic **email** and **URL** validation
+- FastAPI backend with:
+  - request validation
+  - `session_id` generation (UUID)
+  - webhook payload forwarding to n8n
+- Payload sent to n8n includes:
+  - `email`
+  - `article_url`
+  - `session_id`
+- Backend **health check** endpoint for quick status verification
+
+---
 
 ## Tech Stack
 
-- Python 3.10+
-- Streamlit
-- FastAPI
-- Uvicorn
-- n8n (Docker Compose)
-- Requests
+- **Python** 3.10+
+- **Streamlit** (frontend)
+- **FastAPI** (backend)
+- **Uvicorn** (ASGI server)
+- **n8n** (Docker Compose)
+- **requests**
+
+---
 
 ## Project Structure
 
-- [app.py](http://_vscodecontentref_/1) — Streamlit UI
-- [main.py](http://_vscodecontentref_/2) — FastAPI API
-- [docker-compose.yml](http://_vscodecontentref_/3) — n8n service
-- [requirements.txt](http://_vscodecontentref_/4) — Python dependencies
-- .env — environment variables (optional)
+- `app.py` — Streamlit UI
+- `backend/main.py` — FastAPI API
+- `docker-compose.yml` — n8n service
+- `requirements.txt` — Python dependencies
+- `.env` — environment variables (optional)
+
+---
 
 ## Prerequisites
 
-- Conda (recommended) or Python venv
-- Docker Desktop (for n8n)
+- **Conda** (recommended) or Python `venv`
+- **Docker Desktop** (required to run n8n via Docker Compose)
+
+---
 
 ## Setup (Conda)
 
+```bash
 conda create -n aiagent python=3.10 -y
 conda activate aiagent
-python -m pip install -r [requirements.txt](http://_vscodecontentref_/5)
+python -m pip install -r requirements.txt
+```
 
-## Run n8n
+---
 
+## Run n8n (Docker)
+
+Start n8n:
+
+```bash
 docker compose up -d
+```
 
-Open n8n at:
+Open n8n in your browser:
 
 - http://localhost:5678
 
-## Run Backend
+---
 
+## Run the Backend (FastAPI)
+
+Set the n8n webhook URL and start the backend.
+
+### PowerShell (Windows)
+
+```powershell
 $env:N8N_WEBHOOK_URL="http://localhost:5678/webhook/article-agent"
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
 
-Backend endpoints:
+### Backend endpoints
 
-- Health: http://127.0.0.1:8000/health
-- Process: POST /process
+- Health check: http://127.0.0.1:8000/health  
+- Process: `POST` http://127.0.0.1:8000/process
 
-## Run Frontend
+---
 
-Open a second terminal:
+## Run the Frontend (Streamlit)
 
+Open a **second terminal**, activate the environment, set the backend URL, and run the app.
+
+### PowerShell (Windows)
+
+```powershell
 conda activate aiagent
 $env:BACKEND_PROCESS_URL="http://127.0.0.1:8000/process"
-python -m streamlit run [app.py](http://_vscodecontentref_/6) --server.address 127.0.0.1 --server.port 8501
+python -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
+```
 
-Open app:
+Open the app:
 
 - http://127.0.0.1:8501
 
+---
+
 ## API Contract
 
-POST /process request body:
+### `POST /process`
 
+**Request body**
+```json
 {
   "email": "student@example.com",
   "article_url": "https://example.com/article"
 }
+```
 
-Response:
-
+**Response**
+```json
 {
   "message": "Submitted successfully. n8n workflow has started.",
   "session_id": "generated-uuid"
 }
+```
+
+---
 
 ## Environment Variables
 
-- N8N_WEBHOOK_URL (backend): default http://localhost:5678/webhook/article-agent
-- BACKEND_PROCESS_URL (frontend): default http://127.0.0.1:8000/process
+### Backend
 
-## Notes
+- `N8N_WEBHOOK_URL`  
+  - Default: `http://localhost:5678/webhook/article-agent`
 
-- If n8n webhook test URL is used (/webhook-test/), backend can fallback to /webhook/ on 404.
-- If port 8000 is busy, run backend on another port and update BACKEND_PROCESS_URL.
-'@ | Set-Content -Path [README.md](http://_vscodecontentref_/7) -Encoding UTF8
+### Frontend
+
+- `BACKEND_PROCESS_URL`  
+  - Default: `http://127.0.0.1:8000/process`
+
+---
+
+## Notes / Troubleshooting
+
+- If your n8n workflow is using a **test webhook** (`/webhook-test/`), the backend may need to fall back to the regular webhook (`/webhook/`) if it receives a **404**.
+- If port **8000** is already in use, run the backend on a different port and update `BACKEND_PROCESS_URL` accordingly.
+
