@@ -4,7 +4,7 @@ import os
 import requests
 
 st.set_page_config(
-    page_title="Automated AI Article Analyzer", 
+    page_title="Automated AI Article Analyzer",
     page_icon="📝",
     layout="centered"
 )
